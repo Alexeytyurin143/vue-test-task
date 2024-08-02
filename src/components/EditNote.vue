@@ -1,5 +1,5 @@
 <template>
-	<v-card class="mx-auto mt-10" max-width="800">
+	<v-card class="mx-md-auto mt-10 mx-2 mb-2" max-width="950">
 		<v-form @submit.prevent>
 			<v-container>
 				<v-row>
@@ -45,9 +45,11 @@
 					Добавить задачу
 				</v-btn>
 				<v-divider />
-				<div class="d-flex justify-end ga-4 mt-4">
+				<div
+					class="d-flex justify-end ga-4 mt-4 flex-column-reverse flex-sm-row"
+				>
 					<v-btn
-						class="mr-auto"
+						class="mr-sm-auto"
 						@click="openConfirmDialog(note.id)"
 						color="error"
 					>
