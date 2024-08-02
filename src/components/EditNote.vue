@@ -56,10 +56,7 @@
 						Удалить заметку
 					</v-btn>
 					<v-btn @click="openConfirmDialog()">Отмена</v-btn>
-					<v-btn
-						@click="router.push('/')"
-						type="submit"
-						color="success"
+					<v-btn @click="saveNote()" type="submit" color="success"
 						>Сохранить</v-btn
 					>
 				</div>
@@ -79,7 +76,8 @@ import { watch } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
-const { notes, editNote, deleteTask, deleteNote, addTask } = useNotesStore()
+const { notes, editNote, deleteTask, deleteNote, addTask, saveNote } =
+	useNotesStore()
 const note = notes.find(({ id }) => id == route.params.id)
 const noteCopy = JSON.parse(JSON.stringify(note))
 

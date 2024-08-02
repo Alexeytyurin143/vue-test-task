@@ -4,80 +4,19 @@ import { useConfirmStore } from './confirm'
 import { useRouter } from 'vue-router'
 
 export const useNotesStore = defineStore('notes', () => {
-	const notes = ref([
-		{
-			id: 1,
-			name: 'Note 1',
-			tasks: [
-				{
-					id: 1,
-					name: 'Task 1',
-					checked: true,
-				},
-				{
-					id: 2,
-					name: 'Task 2',
-					checked: true,
-				},
-				{
-					id: 3,
-					name: 'Task 3',
-					checked: false,
-				},
-				{
-					id: 4,
-					name: 'Task 4',
-					checked: false,
-				},
-			],
-		},
-		{
-			id: 2,
-			name: 'Note 2',
-			tasks: [
-				{
-					id: 1,
-					name: 'Task 1',
-					checked: false,
-				},
-				{
-					id: 2,
-					name: 'Task 2',
-					checked: true,
-				},
-				{
-					id: 3,
-					name: 'Task 3',
-					checked: true,
-				},
-			],
-		},
-		{
-			id: 3,
-			name: 'Note 3',
-			tasks: [
-				{
-					id: 1,
-					name: 'Task 1',
-					checked: true,
-				},
-				{
-					id: 2,
-					name: 'Task 2',
-					checked: false,
-				},
-				{
-					id: 3,
-					name: 'Task 3',
-					checked: false,
-				},
-			],
-		},
-	])
+	const notes = ref(
+		localStorage.getItem('notes')
+			? JSON.parse(localStorage.getItem('notes'))
+			: []
+	)
 	const isCreateDialogOpen = ref(false)
 	const history = ref([])
 	const { closeConfirmDialog } = useConfirmStore()
 	const router = useRouter()
+
+	const saveLocal = () => {
+		localStorage.setItem('notes', JSON.stringify(notes.value))
+	}
 
 	const closeCreateDialog = () => {
 		isCreateDialogOpen.value = false
@@ -96,6 +35,7 @@ export const useNotesStore = defineStore('notes', () => {
 		})
 		router.push(`/note/${id}`)
 		closeCreateDialog()
+		saveLocal()
 	}
 
 	const findNoteIndex = (noteId) => {
@@ -105,12 +45,19 @@ export const useNotesStore = defineStore('notes', () => {
 	const deleteNote = (id) => {
 		notes.value = notes.value.filter((note) => note.id !== id)
 		closeConfirmDialog()
+		saveLocal()
 	}
 
 	const editNote = (noteId, newNote) => {
 		const index = findNoteIndex(noteId)
 		notes.value[index] = newNote
 		closeConfirmDialog()
+		saveLocal()
+	}
+
+	const saveNote = () => {
+		saveLocal()
+		router.back()
 	}
 
 	const deleteTask = (noteId, taskId) => {
@@ -137,6 +84,7 @@ export const useNotesStore = defineStore('notes', () => {
 		createNote,
 		deleteNote,
 		editNote,
+		saveNote,
 		deleteTask,
 		addTask,
 	}
