@@ -94,7 +94,7 @@ import { useRouter } from 'vue-router'
 import ConfirmDialog from './ConfirmDialog.vue'
 import { useConfirmStore } from '@/stores/confirm'
 import { storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
+import { onBeforeUnmount, onUnmounted, ref, watch } from 'vue'
 
 const router = useRouter()
 const notesStore = useNotesStore()
@@ -135,6 +135,24 @@ const handleSaveNote = () => {
 	editNote()
 	router.push('/')
 }
+
+const confirmLeave = (e) => {
+	if (!e) {
+		const decision = confirm('Вы хотите сохранить изменения перед выходом?')
+		if (decision) {
+			editNote()
+		}
+	} else {
+		e.preventDefault()
+	}
+}
+
+addEventListener('beforeunload', confirmLeave)
+
+onUnmounted(() => {
+	removeEventListener('beforeunload', confirmLeave)
+	confirmLeave()
+})
 
 watch(isConfirmed, (newValue, _) => {
 	if (newValue && confirmId.value) {
