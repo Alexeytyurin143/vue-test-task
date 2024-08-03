@@ -1,10 +1,26 @@
 <template>
 	<v-card class="mx-md-auto mt-10 mx-2 mb-2" max-width="950">
 		<v-form @submit.prevent>
-			<v-container>
+			<v-container class="pa-6">
+				<v-row class="d-flex ga-2">
+					<v-btn
+						icon="mdi-undo"
+						variant="text"
+						:disabled="!historyPrev.length"
+						@click="goToPrev()"
+					/>
+					<v-btn
+						icon="mdi-redo"
+						variant="text"
+						:disabled="!historyNext.length"
+						@click="goToNext()"
+					/>
+				</v-row>
 				<v-row>
 					<v-col cols="12">
 						<v-text-field
+							@focus="makeCopy(note)"
+							@blur="addToHistory(noteCopy)"
 							v-model="note.name"
 							label="Название заметки"
 						/>
@@ -22,14 +38,17 @@
 								density="compact"
 								v-model="task.checked"
 								class="flex-0-0"
+								@click="addToHistory()"
 							/>
 							<v-text-field
 								hide-details
 								label="Название задачи"
 								v-model="task.name"
+								@focus="makeCopy(note)"
+								@blur="addToHistory(noteCopy)"
 							/>
 							<v-btn
-								@click="deleteTask(note.id, task.id)"
+								@click="handleDeleteTask(task.id)"
 								variant="plain"
 								icon="mdi-delete"
 							/>
@@ -37,7 +56,7 @@
 					</v-list-item>
 				</v-list>
 				<v-btn
-					@click="addTask(note.id)"
+					@click="handleAddTask()"
 					prepend-icon="mdi-plus"
 					class="mb-4"
 					variant="text"
@@ -56,7 +75,10 @@
 						Удалить заметку
 					</v-btn>
 					<v-btn @click="openConfirmDialog()">Отмена</v-btn>
-					<v-btn @click="saveNote()" type="submit" color="success"
+					<v-btn
+						@click="handleSaveNote()"
+						type="submit"
+						color="success"
 						>Сохранить</v-btn
 					>
 				</div>
@@ -68,28 +90,57 @@
 
 <script setup>
 import { useNotesStore } from '@/stores/notes'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import ConfirmDialog from './ConfirmDialog.vue'
 import { useConfirmStore } from '@/stores/confirm'
 import { storeToRefs } from 'pinia'
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 
-const route = useRoute()
 const router = useRouter()
-const { notes, editNote, deleteTask, deleteNote, addTask, saveNote } =
-	useNotesStore()
-const note = notes.find(({ id }) => id == route.params.id)
-const noteCopy = JSON.parse(JSON.stringify(note))
+const notesStore = useNotesStore()
+const noteCopy = ref({})
+
+const { historyPrev, historyNext, note } = storeToRefs(notesStore)
+
+const {
+	editNote,
+	deleteTask,
+	deleteNote,
+	addTask,
+	addToHistory,
+	goToNext,
+	goToPrev,
+	cancelSaveNote,
+} = notesStore
 
 const confirmStore = useConfirmStore()
 const { isConfirmed, confirmId } = storeToRefs(confirmStore)
 const { openConfirmDialog } = confirmStore
 
+const makeCopy = (copy) => {
+	noteCopy.value = JSON.parse(JSON.stringify(copy))
+}
+
+const handleAddTask = () => {
+	addToHistory()
+	addTask()
+}
+
+const handleDeleteTask = (taskId) => {
+	addToHistory()
+	deleteTask(taskId)
+}
+
+const handleSaveNote = () => {
+	editNote()
+	router.push('/')
+}
+
 watch(isConfirmed, (newValue, _) => {
 	if (newValue && confirmId.value) {
 		deleteNote(confirmId.value)
 	} else if (newValue) {
-		editNote(route.params.id, noteCopy)
+		cancelSaveNote()
 	}
 	router.push('/')
 })

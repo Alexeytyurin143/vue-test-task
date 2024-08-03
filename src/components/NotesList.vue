@@ -19,7 +19,7 @@
 				</v-list>
 			</v-list-item-subtitle>
 			<v-btn
-				@click="router.push(`/note/${note.id}`)"
+				@click="handleEdit(note)"
 				variant="plain"
 				icon="mdi-pencil"
 			/>
@@ -45,12 +45,17 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const notesStore = useNotesStore()
-const { notes } = storeToRefs(notesStore)
+const { notes, note } = storeToRefs(notesStore)
 const { deleteNote } = notesStore
 
 const confirmStore = useConfirmStore()
 const { isConfirmed, confirmId } = storeToRefs(confirmStore)
 const { openConfirmDialog } = confirmStore
+
+const handleEdit = (noteToEdit) => {
+	note.value = JSON.parse(JSON.stringify(noteToEdit))
+	router.push(`/note/${noteToEdit.id}`)
+}
 
 watch(isConfirmed, (newValue, _) => {
 	if (newValue) {
