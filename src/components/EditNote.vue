@@ -137,21 +137,19 @@ const handleSaveNote = () => {
 }
 
 const confirmLeave = (e) => {
-	if (!e) {
-		const decision = confirm('Вы хотите сохранить изменения перед выходом?')
-		if (decision) {
-			editNote()
-		}
-	} else {
-		e.preventDefault()
+	e.preventDefault()
+	const decision = confirm('Вы хотите сохранить изменения перед выходом?')
+	if (decision) {
+		editNote()
 	}
 }
 
 addEventListener('beforeunload', confirmLeave)
+addEventListener('popstate', confirmLeave)
 
 onUnmounted(() => {
 	removeEventListener('beforeunload', confirmLeave)
-	confirmLeave()
+	removeEventListener('popstate', confirmLeave)
 })
 
 watch(isConfirmed, (newValue, _) => {
